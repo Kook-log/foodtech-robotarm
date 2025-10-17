@@ -1,0 +1,235 @@
+#주강 그리퍼 JRT
+def jrt_grip():
+    set_digital_outputs([-1,-2,-3,-4,-5])
+    wait(2)
+    set_digital_output(4) # or 1~5번 신호 출력
+
+def jrt_ungrip():
+    set_digital_outputs([-1,-2,-3,-4,-5])
+    wait(2)
+    set_digital_output(3) # or 1~5번 신호 출력
+    
+def move_Home():
+    move(posj(0,0,0,0,0,0),60,20)
+
+def global_speed(j1, j2, x1, x2):
+    set_velj(j1)
+    set_accj(j2)
+    set_velx(x1)
+    set_accx(x2)
+
+def set_workcell():
+    set_tcp("KW_TCP") # TCP name
+    set_tool("KW_WEIGHT") # weight name  
+ 
+#main Prog
+def work_mode():
+    global_speed(70,20,70,20) #speed<80!!!!! and accel speed<50!!!!
+    set_workcell() #robot weight & tcp set
+
+def work1():    
+    global_speed(80,20,80,20)
+    set_workcell()
+    
+    movej(posj(0, 0, 90, 0, 90, 0))
+    shunk_grip() #grip
+    
+    task_compliance_ctrl([300,300,300,200,200,200]) #compliance ON 버티는 값
+    movel([0,0,-150,0,0,0],t=20, mod=1) #상대좌표로 20s 걸려서 이동
+    release_compliance_ctrl() ##compliance OFF
+    movej(posj(0, 0, 90, 0, 90, 0))
+    
+def work2():    
+    global_speed(70,20,70,20)
+    set_workcell()
+    
+    movej(posj(180, 0, 90, 0, 90, 0))
+    movej(posj(179.99, 20.39, 79.61, 0.04, 79.99, -0.01))
+    jrt_grip() #grip
+    
+    task_compliance_ctrl([300,300,300,200,200,200]) #compliance ON
+    movel([0,0,-50,0,0,0],t=5, mod=1) #상대좌표로 5s 걸려서 이동
+    release_compliance_ctrl() ##compliance OFF
+    
+    #robot pack 닿은 상태
+    movel([0,0,2,0,0,0],mod=1) # 닿은 상태에서 1mm up
+    jrt_ungrip()# gripper open
+    movel([0,0,-20,0,0,0],mod=1) #상대좌표로 -20mm 하강
+    jrt_grip()
+    movel([0,0,100,0,0,0],mod=1) #up
+        
+    
+    movej(posj(180, 0, 90, 0, 90, 0))
+    movej(posj(180, 20.39, 79.61, 0.04, 79.99, -0.01))
+    movel([0,0,-55,0,0,0], mod=1)
+    jrt_ungrip()
+    wait(1)
+    movej(posj(180, 0, 90, 0, 90, 0))
+
+    # 비동기 모션
+def work3():    
+    global_speed(80,20,80,20)
+    set_workcell()
+    
+    movej(posj(180, 0, 90, 0, 90, 0))
+    movej(posj(180.05, 19.57, 68.16, 0.02, 92.28, 0.06))
+    
+    #movej(posj(0, 7.71, 114.08, 0, 58.21, 0))
+    jrt_grip() #grip
+    
+    task_compliance_ctrl([300,300,300,200,200,200]) #compliance ON
+    amovel([0,0,-100,0,0,0],t=5, mod=1) #상대좌표로 5s 걸려서 이동
+    #amove 는 비동기 모션을 수행 
+    
+    while True:
+        c1=check_force_condition(axis=2,min=3.3) #DR_AXIS_Z force 10N 되면 변수에 1을 저장
+        wait(0.1)
+        tp_log(str(c1))
+        #0.1s check force Z axis
+        if c1==1:
+            stop(2)
+            break
+   
+    release_compliance_ctrl() ##compliance OFF
+    
+    #robot pack 닿은 상태
+    movel([0,0,100,0,0,0],mod=1) # 
+    #jrt_ungrip()# gripper open
+    movel([0,0,-150,0,0,0],mod=1) #
+    #jrt_grip()
+    movel([0,0,100,0,0,0],mod=1) #up
+        
+    
+    movej(posj(180, 0, 90, 0, 90, 0))
+    '''
+    movej(posj(180.05, 19.57, 68.16, 0.02, 92.28, 0.06))
+    wait(1)
+    movel([0,0,-60,0,0,0], mod=1)
+    jrt_ungrip()
+    movej(posj(180, 0, 90, 0, 90, 0))
+    '''
+    
+def work4():    
+    global_speed(80,20,80,20)
+    set_workcell()
+    
+    movej(posj(180, 0, 90, 0, 90, 0)) # 작업 위치
+    movej(posj(180.05, 19.57, 68.16, 0.02, 92.28, 0.06)) #이동 작업 위치
+    
+    #movej(posj(0, 7.71, 114.08, 0, 58.21, 0))
+    jrt_grip() #grip
+    
+    task_compliance_ctrl([300,300,300,200,200,200]) #compliance ON
+    amovel([0,0,-100,0,0,0],t=5, mod=1) #상대좌표로 5s 걸려서 이동
+    #amove 는 비동기 모션을 수행 
+    
+    while True:
+        c1=check_force_condition(axis=2,min=3.3) #DR_AXIS_Z force 10N 되면 변수에 1을 저장
+        wait(0.1)
+        tp_log(str(c1))
+        #0.1s check force Z axis
+        if c1==1:
+            stop(2)
+            tp1 = get_current_posj
+            tp2 = get_current_posx
+            break
+   
+    release_compliance_ctrl() ##compliance OFF
+    
+    #robot pack 닿은 상태
+    movel([0,0,100,0,0,0],mod=1) # 
+    #jrt_ungrip()# gripper open
+    movel([0,0,-150,0,0,0],mod=1) #
+    #jrt_grip()
+    movel([0,0,100,0,0,0],mod=1) #up
+        
+    
+    movej(posj(180, 0, 90, 0, 90, 0))
+    '''
+    movej(posj(180.05, 19.57, 68.16, 0.02, 92.28, 0.06))
+    wait(1)
+    movel([0,0,-60,0,0,0], mod=1)
+    jrt_ungrip()
+    movej(posj(180, 0, 90, 0, 90, 0))
+    '''
+def get_pos_z():
+    x1,sol =get_current_posx() #return 2, p1 = posx, p2 = pos info
+    x2=int(x1[2]) #z 축의 위치 값 정수형태로
+    return x2
+ 
+def work5():
+ 
+    
+    
+    #movej(posj(0, 7.71, 114.08, 0, 58.21, 0))
+    jrt_grip() #grip
+    
+    task_compliance_ctrl([300,300,300,200,200,200]) #compliance ON
+    amovel([0,0,-700,0,0,0],t=20, mod=1) #상대좌표로 5s 걸려서 이동
+    #amove 는 비동기 모션을 수행 
+    
+    while True:
+        c1=check_force_condition(axis=2,min=6) #DR_AXIS_Z force 10N 되면 변수에 1을 저장
+        wait(0.1)
+        tp_log(str(c1))#python print문 
+        #0.1s check force Z axis
+        if c1==1:
+            stop(2)#amove soft stop
+            x1=get_pos_z()
+            break
+    
+ 
+    release_compliance_ctrl() ##compliance OFF
+    
+    #robot pack 닿은 상태
+    movel([0,0,100,0,0,0],mod=1) # 닿은 상태에서 1mm up
+    movel([-54,0,0,0,0,0],mod=1) # 닿은 상태에서 1mm up
+    #jrt_ungrip()# gripper open
+    #movel([0,0,-150,0,0,0],mod=1) #상대좌표로 -20mm 하강
+    #jrt_grip()
+    #movel([0,0,100,0,0,0],mod=1) #up
+        
+    #movej(posj(154.8, 6.28, 86.16, -0.09, 87.83, -25.13))
+    #movej(posj(180, 0, 90, 0, 90, 0))
+    #jrt_grip()
+    return x1
+    
+def task_loc():
+    global_speed(80,20,80,20)
+    set_workcell()
+    movej(posj(180, 0, 90, 0, 90, 0))
+    movej(posj(154.8, 6.28, 86.16, -0.09, 87.83, -25.13)) # 작업 위치
+    
+    posx(-373.74, 269.69, 40.2, 140.19, -180, -37.43) # 옮길 곳 3
+    posj(154.62, 10.73, 101.27, -0.09, 68.93, -25.28)
+    posx(-373.82, 171.67, 47.63, 159.3, -179.06, -20.52) # 시작점 3
+    
+#task_loc()
+"""
+list_a=[]    
+for i in range(3):    
+    a1=work5()
+    list_a.append(a1)
+    
+tp_log(str(list_a)) # 3개의 팩 높이가 출력 되게 해보세요
+"""
+#posj(154.63, 7.44, 95.39, -0.04, 77.27, -25.49)# 작업 위치 우측
+
+def client1():
+    sock = client_socket_open("192.168.137.50", 20000)
+    #my pc server IP
+    
+    wait(1)
+    res, rx_data = client_socket_read(sock, length=64, timeout=30)
+    #res=통신 성공 이면 양수 아니면 음수 
+    
+    rx_msg = rx_data.decode() 
+    #바이너리 값으로 전송 받은 데이터를 디코드
+    tp_log(str(rx_msg))#print()
+     
+    
+    msg = "abcd" 
+    client_socket_write(sock, msg.encode()) 
+    client_socket_close(sock)
+    
+client1()

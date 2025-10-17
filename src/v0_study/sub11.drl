@@ -1,0 +1,32 @@
+def jrt_grip():
+    set_digital_outputs([-1, -2, -3, -4, -5])
+    wait(1)
+    set_digital_output(4)
+
+def jrt_ungrip():
+    set_digital_outputs([-1, -2, -3, -4, -5])
+    wait(1)
+    set_digital_output(3)
+
+def get_sig(num):
+    return get_modbus_slave(num)  # Holding register 값 읽기
+
+def set_sig(num, val):
+    set_modbus_slave(num, val)    # Holding register 값 쓰기
+
+while True:
+    cmd = get_sig(0)  # 주소 0번: 명령어 (3000, 4000)
+
+    if cmd == 3000:
+        set_sig(3, 1)     # 상태: 동작 중
+        jrt_grip()
+        set_sig(0, 0)     # 명령 초기화
+        set_sig(3, 0)     # 상태: idle
+
+    elif cmd == 4000:
+        set_sig(3, 1)     # 상태: 동작 중
+        jrt_ungrip()
+        set_sig(0, 0)     # 명령 초기화
+        set_sig(3, 0)     # 상태: idle
+
+    wait(0.1)

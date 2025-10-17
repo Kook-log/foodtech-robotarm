@@ -1,0 +1,87 @@
+#주강 그리퍼 JRT
+def jrt_grip():
+    set_digital_outputs([-1,-2,-3,-4,-5])
+    wait(2)
+    set_digital_output(4) # or 1~5번 신호 출력
+
+def jrt_ungrip():
+    set_digital_outputs([-1,-2,-3,-4,-5])
+    wait(2)
+    set_digital_output(3) # or 1~5번 신호 출력
+    
+    
+def shunk_grip():
+    set_tool_digital_outputs([-1,-2])
+    wait(2)
+    set_tool_digital_output(1)#1번 신호를 ON
+    wait(2)
+    set_tool_digital_output(-1)#1번 신호를 OFF 
+
+    
+def shunk_ungrip():
+    set_tool_digital_outputs([-1,-2])
+    wait(2)
+    set_tool_digital_output(2)#1번 신호를 ON
+    wait(2)
+    set_tool_digital_output(-2)#1번 신호를 OFF     
+
+def move_Home():
+    move(posj(0,0,0,0,0,0),60,20)
+
+set_velj(50)
+set_accj(20)
+set_velx(80)
+set_accx(30)
+
+def global_speed(j1, j2, x1, x2):
+    set_velj(j1)
+    set_accj(j2)
+    set_velx(x1)
+    set_accx(x2)
+
+def set_workcell():
+    set_tcp("KW_TCP") # TCP name
+    set_tool("KW_WEIGHT") # weight name  
+    
+#set_workcell()
+
+#movej([0,0,0,0,0,0])
+#movej(posj(180,0,90,0,90,0))
+#movej([180,0,90,0,90,0])
+p1 = posx(-581.08, -5.71, 192.49, 88.68, -179.97, -91.2)
+p2 = posx(-567.6, -5.71, 192.49-160, 91.99, -179.97, -87.9)
+#p1=posx(381.86, -36.16, 94.99, 173.66, -180, 165.2) #target pos
+#p2=posx(381.86, -36.16, 94.99+100, 173.66, -180, 165.2)# z pos +100mm
+ready_pos=posj(180, 0, 90, 0, 90, 0)
+
+
+#main Prog
+global_speed(40,20,60,20) #speed<80!!!!! and accel speed<50!!!!
+set_workcell() #robot weight & tcp set
+
+#step1
+'''
+movej(ready_pos)
+jrt_ungrip()#gripper open
+movel(p1) #target 
+movel(p2) #move to target
+jrt_grip() # grip
+wait(2)
+movel(p1) #up
+movej(ready_pos)
+
+movel(p1)
+movel(p2)
+jrt_ungrip()
+wait(1)
+movej(ready_pos)
+'''
+#step2
+p3=[0,100,0,0,0,0]
+#movel(p3,mod=DR_MV_MOD_ABS)#base 
+#movel(p3,mod=DR_MV_MOD_REL)#상대좌표계
+movel([0,100,0,0,0,0],mod=DR_MV_MOD_REL) #y -> 100mm move
+movel([0,0,-100,0,0,0],mod=DR_MV_MOD_REL) # down
+jrt_ungrip() #gripper open
+movel([0,0,100,0,0,0],mod=1) # up mod=1 same mod=DR_MV_MOD_REL
+movej(ready_pos) # home

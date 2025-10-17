@@ -1,0 +1,90 @@
+a1 = get_modbus_slave(128)
+#tp_popup(str(a1))
+'''
+while True:
+    a1 = get_modbus_slave(128)
+    if a1==1000:
+        movej([0,0,0,0,0,0], 30, 30)
+        set_modbus_slave(128, 0)
+    elif a1 == 2000:
+        movej([180,0,90,0,90,0], 30, 30)
+        set_modbus_slave(128, 0) # 다시 초기화
+'''
+def jrt_grip():
+    set_digital_outputs([-1,-2,-3,-4,-5])
+    wait(2)
+    set_digital_output(4) # or 1~5번 신호 출력
+    
+def jrt_ungrip():
+    set_digital_outputs([-1,-2,-3,-4,-5])
+    wait(2)
+    set_digital_output(3) # or 1~5번 신호 출력
+    
+def convert_sig1(value):
+    if value>32767: #만약 가져온 값에서 overflow가 발생하면
+        value-=65536
+    print(value)
+
+def set_sig(num1, num2):
+    client.write_register(address=num1, value=num2, device_id=255)
+
+def set_speed(num1, num2, num3, num4):
+    set_velj(num1)
+    set_accj(num2)
+    set_velx(num3)
+    set_accx(num4)
+
+def get_sig(num):
+    a1=get_modbus_slave(num)
+    wait(0.3)
+    return a1
+    
+def work1():
+    
+    movej([0,0,0,0,0,0])
+    wait(0.3)
+    
+    
+def work2():
+    movej([180,0,90,0,90,0])
+    wait(0.3)
+    
+    
+def work3():
+    jrt_grip()
+    
+def work4():
+    jrt_ungrip()
+
+def ready():
+    set_sig(128, 0)
+    set_sig(129, 0)
+    set_sig(130, 0)
+    set_sig(131, 0)
+    set_sig(132, 0)
+    set_sig(133, 0)
+    
+while True:
+    #set_sig(133, 1000) # 작업 명령
+    #ready()
+    a1=get_sig(132)
+    w1 = get_sig(133)
+    
+    #Work 신호가 있는지 없는지 판별
+    wait(0.3)
+    if a1==1:
+    #만약 공정 신호가 있으면 
+        list1=[]
+        for i in range(4):
+            p1=get_sig(128+i) #128~131
+            list1.append(p1)
+        
+        set_speed(*list1)
+        if w1 == 1000:
+            work1()
+        elif w1 == 2000:
+            work2()
+        elif w1 == 3000:
+            work3()
+        elif w1 == 4000:
+            work4()

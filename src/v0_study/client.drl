@@ -1,0 +1,28 @@
+def client1():
+    sock = client_socket_open("192.168.137.23", 20001)
+    #my pc server IP
+    
+    wait(1)
+    res, rx_data = client_socket_read(sock, length=64, timeout=30)
+    #res=통신 성공 이면 양수 아니면 음수 
+    
+    rx_msg = rx_data.decode() 
+    #바이너리 값으로 전송 받은 데이터를 디코드
+    tp_log(str(rx_msg))#print()
+     
+    
+   # msg = "abcd" 
+    #client_socket_write(sock, msg.encode()) 
+    client_socket_close(sock)
+    return str(rx_msg)
+    
+while True:
+    msg=client1()
+    wait(1)
+    if msg=='home':
+        movej([0,0,0,0,0,0],30,30)
+    elif msg=='ready':
+        movej(posj(154.62, 10.73, 101.27, -0.09, 68.93, -25.28),30,30)
+    elif msg=='exit':
+        exit() #Prog Exit
+           

@@ -1,0 +1,31 @@
+def server_loop():
+    sock = server_socket_open(20000)  # 서버 열기
+    print("로봇 서버 소켓 열림")
+    wait(1)
+
+    try:
+        while True:
+            res, rx_data = server_socket_read(sock, length=64, timeout=1)
+            # res=통신 성공이면 양수, 아니면 음수
+            if res > 0:
+                msg = rx_data.decode()  # 수신 데이터 디코드
+                tp_log(str(msg))
+
+                if msg == 'ok':
+                    movej([0, 0, 0, 0, 0, 0], 30, 30)
+                    server_socket_write(sock, b"DONE")
+                elif msg == 'ready':
+                    movej(posj(154.62, 10.73, 101.27, -0.09, 68.93, -25.28), 30, 30)
+                    server_socket_write(sock, b"DONE")
+                elif msg == 'exit':
+                    break
+            else:
+                # 타임아웃 등으로 아무것도 안 왔을 때 대기
+                wait(0.1)
+    finally:
+        server_socket_close(sock)
+        tp_log("서버 소켓 종료")
+
+
+# 실행
+server_loop()

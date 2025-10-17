@@ -1,0 +1,40 @@
+def jrt_grip():
+    set_digital_outputs([-1, -2, -3, -4, -5])
+    wait(1)
+    set_digital_output(4)
+
+def jrt_ungrip():
+    set_digital_outputs([-1, -2, -3, -4, -5])
+    wait(1)
+    set_digital_output(3)
+    
+def jrt_sgrip():
+    set_digital_outputs([-1, -2, -3, -4, -5])
+    wait(1)
+    set_digital_output(2)
+    
+while True:
+    #a1 = get_modbus_slave(0) 
+    a1 = get_modbus_input('sk1')
+    b1 = get_modbus_input('sk2')
+    c1 = get_modbus_input('sk3')
+    wait(0.1)
+
+    if a1 == 1:
+        jrt_grip()
+        #set_modbus_slave(0, 0)  # 주소 0번 초기화
+        set_modbus_output('sk1',0)
+
+    elif b1 == 1:
+        jrt_ungrip()
+        #set_modbus_slave(0, 0)  # 주소 0번 초기화
+        #set_mode_analog_output(0,0)
+        set_modbus_output('sk2',0)
+        
+    elif c1 == 1:
+        jrt_sgrip()
+        set_modbus_output('sk3',0)
+
+    wait(1)
+posj(180.02, -14.2, 101.83, 0.06, 91.92, 0)
+posx(-269.17, -6.32, 195.32, 14.22, -179.53, -165.69)
