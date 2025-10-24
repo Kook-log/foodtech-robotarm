@@ -1,0 +1,72 @@
+def grip():
+    set_digital_outputs([-1, -2, -3, -4, -5])
+    wait(1)
+    set_digital_output(4)
+   
+def grap_bread():
+    set_digital_outputs([-1, -2, -3, -4, -5])
+    wait(1)
+    set_digital_output(2)
+
+def grap_tool():
+    set_digital_outputs([-1, -2, -3, -4, -5])
+    wait(1)
+    set_digital_output(1)
+
+def full_open():
+    set_digital_outputs([-1, -2, -3, -4, -5])
+    wait(1)
+    set_digital_output(3)
+    
+def workspace():
+    movej(posj(1.45, -22.32, 84.73, -1.68, 83.15, -23.61), 100,100)
+
+def bread_pos():
+    movej(posj(186.12, 11.64, -84.21, -38.2, -106.59, 177.25), 30, 30)
+    
+def bread_pos1():
+    movej(posj(188.67, -50.25, -17.34, -53.87, -110.58, 167.86), 30, 30)
+    #posx(649.95, -0.01, 459.97, 90, -130, 90.34)
+    # x: 650, y: 0, z= 460
+def bread_pos2():
+    movej(posj(191.5, -18.46, -69.47, -49.64, -100.06, 186.14), 30, 30)
+    #posx(489.69, -0.01, 459.97, 90, -130, 90.34)
+    # xㅌ
+#def bread_pos2():
+    # x=270, y=-50, z=550
+   
+    # x 570, y 4, z 485
+def main():
+    port = 20000
+    tp_log("서버 대기 시작... (여러 주문 순차 처리 가능)")
+
+    try:
+        while True:
+            # 1️⃣ 새 연결 대기
+            sock = server_socket_open(port)
+            tp_log("클라이언트 연결 대기 중...")
+
+            # 2️⃣ 데이터 수신
+            res, rx_data = server_socket_read(sock, length=64, timeout=-1)
+            if res > 0:
+                customer_name = rx_data.decode().strip()
+                tp_log("수신된 이름: " + customer_name)
+
+                # 3️⃣ 로봇 동작 수행
+                movej(posj(0, 0, 0, 0, 0, 0), 30, 30)
+                tp_log("주문 동작 완료")
+
+                # 4️⃣ 응답 전송
+                server_socket_write(sock, b"DONE," + customer_name.encode())
+                tp_log("응답 전송 완료: " + customer_name)
+
+            # 5️⃣ 연결 종료 후 다음 주문 대기
+            server_socket_close(sock)
+            tp_log("연결 종료 — 다음 주문 대기 중...")
+            wait(0.2)
+
+    except:
+        tp_log("오류 발생, 서버 종료 시도")
+    finally:
+        tp_log("서버 종료")
+main()
